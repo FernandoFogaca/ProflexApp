@@ -10,71 +10,101 @@ import {
   Share,
   Linking,
   Alert,
+  Image,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 
 export default function MarketingScreen() {
   const [mensagem, setMensagem] = useState("");
   const [campanhas, setCampanhas] = useState([
     {
       id: "1",
-      titulo: "Promoção de Outubro",
-      msg: "🎉 Promoção especial em Outubro! Agende sua consulta e ganhe 20% de desconto.",
+      title: "October Promo",
+      msg: "🎉 Special promotion in October! Book your appointment and get 20% off.",
     },
     {
       id: "2",
-      titulo: "Lembrete de Consulta",
-      msg: "Olá! Não esqueça da sua consulta marcada conosco. Estamos te esperando! 🧑‍⚕️",
+      title: "Appointment Reminder",
+      msg: "Hello! Don’t forget your appointment with us. We’re waiting for you! 🧑‍⚕️",
     },
   ]);
 
-  // Criar nova campanha
+  // Create new campaign
   const addCampanha = () => {
     if (!mensagem.trim()) {
-      Alert.alert("Erro", "Digite uma mensagem para criar a campanha.");
+      Alert.alert("Error", "Please type a message first.");
       return;
     }
     const nova = {
       id: Date.now().toString(),
-      titulo: "Campanha",
+      title: "Campaign",
       msg: mensagem.trim(),
     };
     setCampanhas([nova, ...campanhas]);
     setMensagem("");
   };
 
-  // Compartilhar mensagem
+  // Share
   const shareMensagem = async (msg) => {
     try {
       await Share.share({ message: msg });
     } catch (e) {
-      console.log("Erro ao compartilhar:", e);
+      console.log("Error sharing:", e);
     }
   };
 
-  // Enviar via WhatsApp
+  // WhatsApp
   const sendWhatsApp = (msg) => {
     const url = `whatsapp://send?text=${encodeURIComponent(msg)}`;
     Linking.openURL(url).catch(() =>
-      Alert.alert("Erro", "WhatsApp não está instalado neste dispositivo.")
+      Alert.alert("Error", "WhatsApp is not installed.")
     );
+  };
+
+  // Edit
+  const editCampanha = (id) => {
+    const camp = campanhas.find((c) => c.id === id);
+    if (!camp) return;
+    setMensagem(camp.msg);
+    setCampanhas(campanhas.filter((c) => c.id !== id));
+  };
+
+  // Delete
+  const deleteCampanha = (id) => {
+    setCampanhas(campanhas.filter((c) => c.id !== id));
+  };
+
+  // Image upload
+  const pickImage = async (id) => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const updated = campanhas.map((c) =>
+        c.id === id ? { ...c, image: result.assets[0].uri } : c
+      );
+      setCampanhas(updated);
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Campanhas de Marketing</Text>
+      <Text style={styles.title}>Marketing Campaigns</Text>
 
-      {/* Criar nova campanha */}
+      {/* Create new campaign */}
       <TextInput
         style={styles.input}
-        placeholder="Escreva sua mensagem de campanha..."
+        placeholder="Write your campaign message..."
         value={mensagem}
         onChangeText={setMensagem}
       />
       <TouchableOpacity style={styles.button} onPress={addCampanha}>
-        <Text style={styles.buttonText}>Adicionar Campanha</Text>
+        <Text style={styles.buttonText}>Add Campaign</Text>
       </TouchableOpacity>
 
-      {/* Lista de campanhas */}
+      {/* Campaign list */}
       <FlatList
         data={campanhas}
         keyExtractor={(item) => item.id}
@@ -82,21 +112,46 @@ export default function MarketingScreen() {
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.nome}>{item.titulo}</Text>
+              <Text style={styles.nome}>{item.title}</Text>
               <Text style={styles.info}>{item.msg}</Text>
+              {item.image && (
+                <Image
+                  source={{ uri: item.image }}
+                  style={{ width: "100%", height: 120, marginTop: 8, borderRadius: 8 }}
+                  resizeMode="cover"
+                />
+              )}
             </View>
             <View style={styles.actions}>
               <TouchableOpacity
-                style={styles.shareButton}
-                onPress={() => shareMensagem(item.msg)}
+                style={[styles.smallButton, { backgroundColor: "#ffc107" }]}
+                onPress={() => editCampanha(item.id)}
               >
-                <Text style={styles.actionText}>Compartilhar</Text>
+                <Text style={styles.actionText}>Edit</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.whatsButton}
+                style={[styles.smallButton, { backgroundColor: "#dc3545" }]}
+                onPress={() => deleteCampanha(item.id)}
+              >
+                <Text style={styles.actionText}>Delete</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.smallButton, { backgroundColor: "steelblue" }]}
+                onPress={() => shareMensagem(item.msg)}
+              >
+                <Text style={styles.actionText}>Share</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.smallButton, { backgroundColor: "#25D366" }]}
                 onPress={() => sendWhatsApp(item.msg)}
               >
                 <Text style={styles.actionText}>WhatsApp</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.smallButton, { backgroundColor: "#6c757d" }]}
+                onPress={() => pickImage(item.id)}
+              >
+                <Text style={styles.actionText}>Image</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -107,17 +162,8 @@ export default function MarketingScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#f9f9f9",
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 15,
-    textAlign: "center",
-  },
+  container: { flex: 1, padding: 20, backgroundColor: "#f9f9f9" },
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 15, textAlign: "center" },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
@@ -132,11 +178,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
   },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
+  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
   card: {
     backgroundColor: "#fff",
     padding: 15,
@@ -145,33 +187,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ddd",
   },
-  nome: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 5,
-  },
-  info: {
-    fontSize: 14,
-    color: "#555",
-  },
+  nome: { fontSize: 18, fontWeight: "bold", marginBottom: 5 },
+  info: { fontSize: 14, color: "#555" },
   actions: {
     flexDirection: "row",
     marginTop: 10,
-    justifyContent: "flex-end",
-    gap: 10,
+    flexWrap: "wrap",
+    gap: 6,
   },
-  shareButton: {
-    backgroundColor: "#007bff",
-    padding: 8,
+  smallButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
     borderRadius: 6,
+    marginRight: 4,
   },
-  whatsButton: {
-    backgroundColor: "#25D366",
-    padding: 8,
-    borderRadius: 6,
-  },
-  actionText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
+  actionText: { color: "#fff", fontWeight: "600", fontSize: 12 },
 });
