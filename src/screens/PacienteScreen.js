@@ -1,5 +1,5 @@
-// src/screens/PacienteScreen.js
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect, useState } from "react"
 import {
   View,
   Text,
@@ -8,130 +8,224 @@ import {
   FlatList,
   StyleSheet,
   Alert,
-} from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+  useColorScheme,
+} from "react-native"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
-export default function PacienteScreen() {
-  const [nome, setNome] = useState("");
-  const [telefone, setTelefone] = useState("");
-  const [idade, setIdade] = useState("");
-  const [pacientes, setPacientes] = useState([]);
+function calcularIdade(dataNasc) {
+  if (!dataNasc) return ""
+  const hoje = new Date()
+  const nascimento = new Date(dataNasc)
+  let idade = hoje.getFullYear() - nascimento.getFullYear()
+  const m = hoje.getMonth() - nascimento.getMonth()
+  if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) {
+    idade--
+  }
+  return idade
+}
 
-  // Carregar pacientes salvos
+export default function PacienteScreen({ navigation }) {
+  const [nome, setNome] = useState("")
+  const [telefone, setTelefone] = useState("")
+  const [nascimento, setNascimento] = useState("")
+  const [pacientes, setPacientes] = useState([])
+  const [busca, setBusca] = useState("")
+  const scheme = useColorScheme() // "light" ou "dark"
+  const isDark = scheme === "dark"
+
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await AsyncStorage.getItem("pacientes");
-        if (data) setPacientes(JSON.parse(data));
+        const data = await AsyncStorage.getItem("pacientes")
+        if (data) setPacientes(JSON.parse(data))
       } catch (e) {
-        console.log("Erro ao carregar pacientes", e);
+        console.log("Erro ao carregar pacientes", e)
       }
-    };
-    loadData();
-  }, []);
+    }
+    loadData()
+  }, [])
 
-  // Salvar pacientes
   const saveData = async (list) => {
     try {
-      await AsyncStorage.setItem("pacientes", JSON.stringify(list));
+      await AsyncStorage.setItem("pacientes", JSON.stringify(list))
     } catch (e) {
-      console.log("Erro ao salvar pacientes", e);
+      console.log("Erro ao salvar pacientes", e)
     }
-  };
+  }
 
-  // Adicionar paciente
   const addPaciente = () => {
-    if (!nome || !telefone || !idade) {
-      Alert.alert("Erro", "Preencha todos os campos!");
-      return;
+    if (!nome || !telefone || !nascimento) {
+      Alert.alert("Erro", "Preencha todos os campos!")
+      return
     }
+    const idade = calcularIdade(nascimento)
     const novoPaciente = {
       id: Date.now().toString(),
       nome,
       telefone,
+      nascimento,
       idade,
-    };
-    const updatedList = [novoPaciente, ...pacientes];
-    setPacientes(updatedList);
-    saveData(updatedList);
-    setNome("");
-    setTelefone("");
-    setIdade("");
-  };
+    }
+    const updatedList = [novoPaciente, ...pacientes]
+    setPacientes(updatedList)
+    saveData(updatedList)
+    setNome("")
+    setTelefone("")
+    setNascimento("")
+  }
 
-  // Remover paciente
-  const removePaciente = (id) => {
-    const updatedList = pacientes.filter((p) => p.id !== id);
-    setPacientes(updatedList);
-    saveData(updatedList);
-  };
+  const resultado = pacientes.filter(
+    (p) =>
+      p.nome.toLowerCase().includes(busca.toLowerCase()) ||
+      p.telefone.includes(busca)
+  )
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Cadastro de Pacientes</Text>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: isDark ? "#121212" : "#f1f1f1" },
+      ]}
+    >
+      <View
+        style={[
+          styles.box,
+          { backgroundColor: isDark ? "#1e1e1e" : "#4390a1" },
+        ]}
+      >
+        <Text style={[styles.title, { color: isDark ? "#fff" : "#fff" }]}>
+          Cadastro de Pacientes
+        </Text>
 
-      {/* Formulário */}
-      <TextInput
-        style={styles.input}
-        placeholder="Nome"
-        value={nome}
-        onChangeText={setNome}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Telefone"
-        keyboardType="phone-pad"
-        value={telefone}
-        onChangeText={setTelefone}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Idade"
-        keyboardType="numeric"
-        value={idade}
-        onChangeText={setIdade}
-      />
+        <TextInput
+          style={[
+            styles.input,
+            {
+              backgroundColor: isDark ? "#2a2a2a" : "#fff",
+              color: isDark ? "#fff" : "#000",
+            },
+          ]}
+          placeholder="Nome"
+          placeholderTextColor={isDark ? "#aaa" : "#666"}
+          value={nome}
+          onChangeText={setNome}
+        />
+        <TextInput
+          style={[
+            styles.input,
+            {
+              backgroundColor: isDark ? "#2a2a2a" : "#fff",
+              color: isDark ? "#fff" : "#000",
+            },
+          ]}
+          placeholder="Telefone"
+          placeholderTextColor={isDark ? "#aaa" : "#666"}
+          keyboardType="phone-pad"
+          value={telefone}
+          onChangeText={setTelefone}
+        />
+        <TextInput
+          style={[
+            styles.input,
+            {
+              backgroundColor: isDark ? "#2a2a2a" : "#fff",
+              color: isDark ? "#fff" : "#000",
+            },
+          ]}
+          placeholder="Data de Nascimento (AAAA-MM-DD)"
+          placeholderTextColor={isDark ? "#aaa" : "#666"}
+          value={nascimento}
+          onChangeText={setNascimento}
+        />
 
-      <TouchableOpacity style={styles.button} onPress={addPaciente}>
-        <Text style={styles.buttonText}>Adicionar Paciente</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={addPaciente}>
+          <Text style={styles.buttonText}>Adicionar Paciente</Text>
+        </TouchableOpacity>
 
-      {/* Lista de Pacientes */}
+        <View style={{ flexDirection: "row", marginTop: 15 }}>
+          <TextInput
+            style={[
+              styles.input,
+              {
+                flex: 1,
+                backgroundColor: isDark ? "#2a2a2a" : "#fff",
+                color: isDark ? "#fff" : "#000",
+              },
+            ]}
+            placeholder="Pesquisar por nome ou telefone..."
+            placeholderTextColor={isDark ? "#aaa" : "#666"}
+            value={busca}
+            onChangeText={setBusca}
+          />
+          <TouchableOpacity
+            style={[styles.button, { marginLeft: 8, paddingHorizontal: 16 }]}
+            onPress={() => {}}
+          >
+            <Text style={styles.buttonText}>🔍</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <FlatList
-        data={pacientes}
+        data={resultado}
         keyExtractor={(item) => item.id}
-        style={{ marginTop: 20, width: "100%" }}
+        style={{ marginTop: 10, width: "100%" }}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <TouchableOpacity
+            style={[
+              styles.card,
+              {
+                backgroundColor: isDark ? "#1e1e1e" : "#fff",
+                borderColor: isDark ? "#333" : "#ddd",
+              },
+            ]}
+            onPress={() =>
+              navigation.navigate("CadastroCompleto", { paciente: item })
+            }
+          >
             <View>
-              <Text style={styles.nome}>{item.nome}</Text>
-              <Text style={styles.info}>📞 {item.telefone}</Text>
-              <Text style={styles.info}>🎂 {item.idade} anos</Text>
+              <Text
+                style={[styles.nome, { color: isDark ? "#fff" : "#000" }]}
+              >
+                {item.nome}
+              </Text>
+              <Text
+                style={[styles.info, { color: isDark ? "#ccc" : "#555" }]}
+              >
+                📞 {item.telefone}
+              </Text>
+              <Text
+                style={[styles.info, { color: isDark ? "#ccc" : "#555" }]}
+              >
+                🎂 {item.nascimento} ({item.idade} anos)
+              </Text>
             </View>
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={() => removePaciente(item.id)}
-            >
-              <Text style={styles.deleteText}>Excluir</Text>
-            </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         )}
       />
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  container: { flex: 1, padding: 20 },
+  box: {
     padding: 20,
-    backgroundColor: "#f9f9f9",
+    borderRadius: 14,
+    marginBottom: 20,
+    marginTop: 30,
+    width: "100%",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
   },
   title: {
     fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 15,
     textAlign: "center",
+    marginBottom: 15,
   },
   input: {
     borderWidth: 1,
@@ -139,21 +233,16 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     marginBottom: 10,
-    backgroundColor: "#fff",
   },
   button: {
-    backgroundColor: "#4390a1",
+    backgroundColor: "#2c6c7a",
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
+    justifyContent: "center",
   },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
+  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
   card: {
-    backgroundColor: "#fff",
     padding: 15,
     borderRadius: 10,
     flexDirection: "row",
@@ -161,23 +250,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#ddd",
   },
-  nome: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  info: {
-    fontSize: 14,
-    color: "#555",
-  },
-  deleteButton: {
-    backgroundColor: "#dc3545",
-    padding: 8,
-    borderRadius: 6,
-  },
-  deleteText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-});
+  nome: { fontSize: 18, fontWeight: "bold" },
+  info: { fontSize: 14 },
+})
