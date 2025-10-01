@@ -1,12 +1,12 @@
 // src/screens/HomeScreen.js
-import React, { useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, Animated, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { useEffect, useRef, useState } from "react";
+import { Animated, StyleSheet, Text, TouchableOpacity } from "react-native";
 
 export default function HomeScreen({ navigation }) {
   // Frases em PT, FR, EN
   const frases = [
-    "Bem-vindo ao Proflex",
+    "Bemvindo ao Proflex",
     "Bienvenue à Proflex",
     "Welcome to Proflex",
   ];
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 42,
-    color: "#444",
+    color: "#eee",
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 50,

@@ -11,10 +11,11 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function CompromissosScreen() {
+export default function CompromissosScreen({ route }) {
+  const { data: dataParam, hora: horaParam } = route.params || {}; 
   const [titulo, setTitulo] = useState("");
-  const [data, setData] = useState("");
-  const [hora, setHora] = useState("");
+  const [data, setData] = useState(dataParam || "");
+  const [hora, setHora] = useState(horaParam || "");
   const [descricao, setDescricao] = useState("");
   const [compromissos, setCompromissos] = useState([]);
 
@@ -112,7 +113,9 @@ export default function CompromissosScreen() {
           <View style={styles.card}>
             <View style={{ flex: 1 }}>
               <Text style={styles.nome}>{item.titulo}</Text>
-              <Text style={styles.info}>📅 {item.data} ⏰ {item.hora}</Text>
+              <Text style={styles.info}>
+                📅 {item.data} ⏰ {item.hora}
+              </Text>
               {item.descricao ? (
                 <Text style={styles.info}>📝 {item.descricao}</Text>
               ) : null}
