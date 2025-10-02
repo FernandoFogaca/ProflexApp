@@ -1,50 +1,53 @@
-# Welcome to your Expo app 👋
+# 📱 ProFlex App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+🇧🇷 **Português (BR)**  
+O **ProFlex App** é a versão mobile do sistema Proflex, desenvolvido em **React Native (Expo)**.  
+Permite a profissionais organizarem **agenda, pacientes, marketing e perfil** de forma prática, com suporte a **Dark Mode** e integração com **WhatsApp**.
 
-## Get started
+🇬🇧 **English (UK)**  
+**ProFlex App** is the mobile version of the Proflex system, built with **React Native (Expo)**.  
+It helps professionals manage **appointments, patients, marketing campaigns and profile**, with **Dark Mode** and **WhatsApp integration**.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## 🔧 Tech Stack
+- [Expo](https://expo.dev/)
+- React Native
+- AsyncStorage (persistência)
+- React Navigation (Bottom Tabs + Stack)
+- Context API (Theme/Dark Mode)
+- Expo Notifications
+- Expo Image Picker
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+## 🚀 Features
+✅ Login com **email, WhatsApp e senha**  
+✅ Cadastro de pacientes com persistência local  
+✅ Agenda com horários, lembretes e notificações  
+✅ Tela de marketing com campanhas + compartilhamento  
+✅ Perfil com foto de avatar, edição e **Dark Mode**  
+✅ Navegação por **Bottom Tabs** (Home, Agenda, Pacientes, Marketing, Perfil)  
 
-In the output, you'll find options to open the app in a
+---
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 📂 Estrutura de Pastas
+src
+├─ context
+│ └─ ThemeContext.js
+├─ screens
+│ ├─ AgendaScreen.js
+│ ├─ CadastroCompleto
+│ │ ├─ CadastroCompleto.js
+│ │ ├─ DadosBasicos.js
+│ │ ├─ FotosPaciente.js
+│ │ └─ ...
+│ ├─ CompromissosScreen.js
+│ ├─ HomeScreen.js
+│ ├─ LoginScreen.js
+│ ├─ MarketingScreen.js
+│ ├─ NewsScreen.js
+│ ├─ PacienteScreen.js
+│ └─ ProfileScreen.js
+└─ App.js
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
