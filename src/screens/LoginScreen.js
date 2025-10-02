@@ -8,9 +8,15 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTheme } from "../context/ThemeContext"; // contexto do dark mode
 
 export default function LoginScreen({ navigation }) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [senha, setSenha] = useState("");
   const [mensagem, setMensagem] = useState("");
   const emailRef = useRef(null);
@@ -19,29 +25,56 @@ export default function LoginScreen({ navigation }) {
     emailRef.current?.focus();
   }, []);
 
-  function handleSubmit() {
-    if (email === "admin@proflex.com" && senha === "123456") {
+  async function handleSubmit() {
+    if (email && senha && phone) {
+      const userData = {
+        email,
+        phone,
+      };
+      await AsyncStorage.setItem("userProfile", JSON.stringify(userData));
       setMensagem("Login ok. Redirecionando…");
       setTimeout(() => {
         navigation.replace("Main"); // vai direto para as tabs
       }, 1000);
     } else {
-      setMensagem("Use admin@proflex.com / 123456 para testar.");
+      setMensagem("Preencha email, WhatsApp e senha.");
     }
   }
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[
+        styles.container,
+        { backgroundColor: isDark ? "#121212" : "#f2f2f2" },
+      ]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View style={styles.box}>
-        <Text style={styles.title}>Login</Text>
+      <View
+        style={[
+          styles.box,
+          { backgroundColor: isDark ? "#1e1e1e" : "#fff" },
+        ]}
+      >
+        <Text
+          style={[
+            styles.title,
+            { color: isDark ? "#fff" : "#000" },
+          ]}
+        >
+          Login
+        </Text>
 
         <TextInput
           ref={emailRef}
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              backgroundColor: isDark ? "#2a2a2a" : "#fff",
+              color: isDark ? "#fff" : "#000",
+            },
+          ]}
           placeholder="Digite seu email"
+          placeholderTextColor={isDark ? "#aaa" : "#666"}
           keyboardType="email-address"
           autoCapitalize="none"
           value={email}
@@ -49,8 +82,31 @@ export default function LoginScreen({ navigation }) {
         />
 
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              backgroundColor: isDark ? "#2a2a2a" : "#fff",
+              color: isDark ? "#fff" : "#000",
+            },
+          ]}
+          placeholder="Digite seu WhatsApp (+55...)"
+          placeholderTextColor={isDark ? "#aaa" : "#666"}
+          keyboardType="phone-pad"
+          autoCapitalize="none"
+          value={phone}
+          onChangeText={setPhone}
+        />
+
+        <TextInput
+          style={[
+            styles.input,
+            {
+              backgroundColor: isDark ? "#2a2a2a" : "#fff",
+              color: isDark ? "#fff" : "#000",
+            },
+          ]}
           placeholder="Digite sua senha"
+          placeholderTextColor={isDark ? "#aaa" : "#666"}
           secureTextEntry
           value={senha}
           onChangeText={setSenha}
@@ -60,10 +116,19 @@ export default function LoginScreen({ navigation }) {
           <Text style={styles.buttonText}>Entrar</Text>
         </TouchableOpacity>
 
-        {mensagem ? <Text style={styles.message}>{mensagem}</Text> : null}
+        {mensagem ? (
+          <Text
+            style={[
+              styles.message,
+              { color: isDark ? "#ff7373" : "#d9534f" },
+            ]}
+          >
+            {mensagem}
+          </Text>
+        ) : null}
 
-        <Text style={styles.hint}>
-          Credenciais de teste: admin@proflex.com / 123456
+        <Text style={[styles.hint, { color: isDark ? "#aaa" : "#777" }]}>
+          Credenciais de teste: qualquer email, WhatsApp e senha
         </Text>
       </View>
     </KeyboardAvoidingView>
@@ -75,13 +140,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f2f2f2",
     padding: 20,
   },
   box: {
     width: "100%",
     maxWidth: 400,
-    backgroundColor: "#fff",
     borderRadius: 10,
     padding: 20,
     elevation: 3,
@@ -119,13 +182,11 @@ const styles = StyleSheet.create({
   },
   message: {
     textAlign: "center",
-    color: "#d9534f",
     marginTop: 8,
   },
   hint: {
     marginTop: 15,
     textAlign: "center",
     fontSize: 12,
-    color: "#777",
   },
 });

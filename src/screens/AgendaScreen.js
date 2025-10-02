@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
@@ -9,6 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { useTheme } from "../context/ThemeContext";
 
 // Helpers
 const isPast = (dateISO, hhmm) => {
@@ -19,6 +19,9 @@ const isPast = (dateISO, hhmm) => {
 };
 
 export default function AgendaScreen({ navigation }) {
+  const { theme } = useTheme(); // 👈 pega tema
+  const isDark = theme === "dark";
+
   const hoje = new Date().toISOString().slice(0, 10);
   const [horaAtual, setHoraAtual] = useState(
     new Date().toLocaleTimeString("pt-BR", { hour12: false })
@@ -36,17 +39,14 @@ export default function AgendaScreen({ navigation }) {
   const [temp, setTemp] = useState(null);
   const [saudacao, setSaudacao] = useState("");
 
-  // Lembretes
   const [lembretes, setLembretes] = useState([]);
   const [lemHora, setLemHora] = useState(new Date());
   const [showLemPicker, setShowLemPicker] = useState(false);
   const [lemMsg, setLemMsg] = useState("");
   const [lemEditando, setLemEditando] = useState(null);
 
-  // slots
   const [showPicker, setShowPicker] = useState(null);
 
-  // Relógio + saudação dinâmica
   useEffect(() => {
     const updateTime = () => {
       setHoraAtual(new Date().toLocaleTimeString("pt-BR", { hour12: false }));
@@ -60,7 +60,6 @@ export default function AgendaScreen({ navigation }) {
     return () => clearInterval(timer);
   }, []);
 
-  // Carregar agendamentos do storage
   useEffect(() => {
     (async () => {
       const data = await AsyncStorage.getItem("agendamentos");
@@ -68,12 +67,10 @@ export default function AgendaScreen({ navigation }) {
     })();
   }, []);
 
-  // Salvar agendamentos no storage
   const saveAgendamentos = async (list) => {
     setAgendamentos(list);
     await AsyncStorage.setItem("agendamentos", JSON.stringify(list));
   };
-
 
   useEffect(() => {
     (async () => {
@@ -83,7 +80,6 @@ export default function AgendaScreen({ navigation }) {
         let location = await Location.getCurrentPositionAsync({});
         const { latitude, longitude } = location.coords;
 
-        // Cidade + estado com BigDataCloud
         const r = await fetch(
           `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=pt`
         );
@@ -91,7 +87,6 @@ export default function AgendaScreen({ navigation }) {
         setCidade(j.city || j.locality || j.principalSubdivision || "");
         setRegiao(j.principalSubdivision || "");
 
-        // Clima
         const w = await fetch(
           `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&timezone=auto`
         );
@@ -103,12 +98,10 @@ export default function AgendaScreen({ navigation }) {
     })();
   }, []);
 
-  // Notificações
   useEffect(() => {
     Notifications.requestPermissionsAsync();
   }, []);
 
-  // Criar ou editar agendamento
   const salvarAgendamento = () => {
     const dataStr = dataHora.toISOString().slice(0, 10);
     const horaStr = dataHora.toLocaleTimeString("pt-BR", {
@@ -125,13 +118,7 @@ export default function AgendaScreen({ navigation }) {
       );
     } else {
       lista = [
-        {
-          id: Date.now(),
-          data: dataStr,
-          hora: horaStr,
-          titulo,
-          descricao,
-        },
+        { id: Date.now(), data: dataStr, hora: horaStr, titulo, descricao },
         ...agendamentos,
       ];
     }
@@ -152,7 +139,6 @@ export default function AgendaScreen({ navigation }) {
     setDataHora(new Date());
   };
 
-  // Próximas 4 horas
   const proximas4h = agendamentos.filter((a) => {
     const [h, m] = a.hora.split(":").map(Number);
     const dt = new Date(`${a.data}T${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`);
@@ -161,7 +147,6 @@ export default function AgendaScreen({ navigation }) {
     return dt >= agora && dt <= quatroH;
   });
 
-  // Criar ou editar lembrete
   const criarOuEditarLembrete = () => {
     if (!lemMsg.trim()) return;
     const horaStr = lemHora.toLocaleTimeString("pt-BR", {
@@ -198,7 +183,6 @@ export default function AgendaScreen({ navigation }) {
     setLembretes(lista);
   };
 
-  // DateTimePicker flexível
   const abrirDatePicker = () => setShowPicker("date");
   const onChangePicker = (event, selectedDate) => {
     if (!selectedDate) {
@@ -218,9 +202,14 @@ export default function AgendaScreen({ navigation }) {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={[
+        styles.container,
+        { backgroundColor: isDark ? "#121212" : "#f8f9fa" },
+      ]}
+    >
       {/* Topo */}
-      <Card style={styles.topCard}>
+      <Card style={[styles.topCard]}>
         <Card.Content>
           <View style={styles.topRow}>
             <Text style={styles.topText}>{saudacao}</Text>
@@ -237,14 +226,26 @@ export default function AgendaScreen({ navigation }) {
       </Card>
 
       {/* Slots */}
-      <Card style={styles.card}>
-        <Card.Title title="Horários" />
+      <Card
+        style={[
+          styles.card,
+          { backgroundColor: isDark ? "#1e1e1e" : "#fff" },
+        ]}
+      >
+        <Card.Title
+          title="Horários"
+          titleStyle={{ color: isDark ? "#fff" : "#000" }}
+        />
         <Card.Content>
           <View style={styles.slotsRow}>
             {agendamentos.map((s) => (
               <TouchableOpacity
                 key={s.id}
-                style={[styles.slot, isPast(s.data, s.hora) && { opacity: 0.4 }]}
+                style={[
+                  styles.slot,
+                  { backgroundColor: isDark ? "#2a2a2a" : "#fff" },
+                  isPast(s.data, s.hora) && { opacity: 0.4 },
+                ]}
                 onPress={() => {
                   setSlotSelecionado(s.id);
                   setTitulo(s.titulo);
@@ -252,8 +253,10 @@ export default function AgendaScreen({ navigation }) {
                   setDataHora(new Date(`${s.data}T${s.hora}`));
                 }}
               >
-                <Text style={styles.slotText}>{s.hora}</Text>
-                <Text style={{ fontSize: 10 }}>{s.titulo}</Text>
+                <Text style={[styles.slotText]}>{s.hora}</Text>
+                <Text style={{ fontSize: 10, color: isDark ? "#ccc" : "#000" }}>
+                  {s.titulo}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -275,14 +278,21 @@ export default function AgendaScreen({ navigation }) {
       </Card>
 
       {/* Próximas 4h */}
-      <Card style={styles.card}>
-        <Card.Title title="⏱️ Próximas 4 horas" />
+      <Card
+        style={[styles.card, { backgroundColor: isDark ? "#1e1e1e" : "#fff" }]}
+      >
+        <Card.Title
+          title="⏱️ Próximas 4 horas"
+          titleStyle={{ color: isDark ? "#fff" : "#000" }}
+        />
         <Card.Content>
           {proximas4h.length === 0 ? (
-            <Text style={{ color: "#666" }}>Sem agendamentos.</Text>
+            <Text style={{ color: isDark ? "#aaa" : "#666" }}>
+              Sem agendamentos.
+            </Text>
           ) : (
             proximas4h.map((item) => (
-              <Text key={item.id}>
+              <Text key={item.id} style={{ color: isDark ? "#fff" : "#000" }}>
                 {item.hora} — {item.titulo}
               </Text>
             ))
@@ -291,8 +301,13 @@ export default function AgendaScreen({ navigation }) {
       </Card>
 
       {/* Lembretes */}
-      <Card style={styles.card}>
-        <Card.Title title="🔔 Lembretes" />
+      <Card
+        style={[styles.card, { backgroundColor: isDark ? "#1e1e1e" : "#fff" }]}
+      >
+        <Card.Title
+          title="🔔 Lembretes"
+          titleStyle={{ color: isDark ? "#fff" : "#000" }}
+        />
         <Card.Content>
           <Button mode="outlined" onPress={() => setShowLemPicker(true)}>
             Selecionar hora
@@ -310,12 +325,23 @@ export default function AgendaScreen({ navigation }) {
             />
           )}
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: isDark ? "#2a2a2a" : "#fff",
+                color: isDark ? "#fff" : "#000",
+              },
+            ]}
             placeholder="Mensagem do lembrete"
+            placeholderTextColor={isDark ? "#aaa" : "#666"}
             value={lemMsg}
             onChangeText={setLemMsg}
           />
-          <Button mode="contained" buttonColor="#4390a1" onPress={criarOuEditarLembrete}>
+          <Button
+            mode="contained"
+            buttonColor="#4390a1"
+            onPress={criarOuEditarLembrete}
+          >
             {lemEditando ? "Salvar Edição" : "Criar"}
           </Button>
 
@@ -323,7 +349,8 @@ export default function AgendaScreen({ navigation }) {
             <Chip
               key={l.id}
               icon="alarm"
-              style={{ marginTop: 6 }}
+              style={{ marginTop: 6, backgroundColor: isDark ? "#2a2a2a" : "#eee" }}
+              textStyle={{ color: isDark ? "#fff" : "#000" }}
               onPress={() => {
                 setLemEditando(l.id);
                 setLemMsg(l.msg);
@@ -332,7 +359,7 @@ export default function AgendaScreen({ navigation }) {
                 d.setHours(h, m, 0);
                 setLemHora(d);
               }}
-              onClose={() => deletarLembrete(l.id)} // botão X do chip deleta
+              onClose={() => deletarLembrete(l.id)}
             >
               {l.hora} — {l.msg}
             </Chip>
@@ -343,8 +370,19 @@ export default function AgendaScreen({ navigation }) {
       {/* Modal do Slot */}
       <Modal transparent visible={slotSelecionado !== null} animationType="fade">
         <Pressable style={styles.modalBg} onPress={fecharModal}>
-          <View style={styles.modalBox}>
-            <Text style={{ fontWeight: "bold", marginBottom: 12 }}>
+          <View
+            style={[
+              styles.modalBox,
+              { backgroundColor: isDark ? "#1e1e1e" : "#fff" },
+            ]}
+          >
+            <Text
+              style={{
+                fontWeight: "bold",
+                marginBottom: 12,
+                color: isDark ? "#fff" : "#000",
+              }}
+            >
               {dataHora.toLocaleDateString("pt-BR")} —{" "}
               {dataHora.toLocaleTimeString("pt-BR", {
                 hour: "2-digit",
@@ -352,14 +390,28 @@ export default function AgendaScreen({ navigation }) {
               })}
             </Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: isDark ? "#2a2a2a" : "#fff",
+                  color: isDark ? "#fff" : "#000",
+                },
+              ]}
               placeholder="Título"
+              placeholderTextColor={isDark ? "#aaa" : "#666"}
               value={titulo}
               onChangeText={setTitulo}
             />
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: isDark ? "#2a2a2a" : "#fff",
+                  color: isDark ? "#fff" : "#000",
+                },
+              ]}
               placeholder="Descrição"
+              placeholderTextColor={isDark ? "#aaa" : "#666"}
               value={descricao}
               onChangeText={setDescricao}
             />
@@ -404,7 +456,6 @@ export default function AgendaScreen({ navigation }) {
         </Pressable>
       </Modal>
 
-      {/* Botão Compromissos */}
       <Button
         mode="contained"
         buttonColor="#4390a1"
@@ -418,7 +469,7 @@ export default function AgendaScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 12, backgroundColor: "#f8f9fa" },
+  container: { flex: 1, padding: 12 },
   topCard: { marginBottom: 12, backgroundColor: "#4390a1" },
   topRow: { flexDirection: "row", justifyContent: "space-between" },
   topText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
@@ -431,13 +482,13 @@ const styles = StyleSheet.create({
     width: 70, height: 70, borderRadius: 12,
     borderWidth: 2, borderColor: "#4390a1",
     alignItems: "center", justifyContent: "center",
-    backgroundColor: "#fff", margin: 4,
+    margin: 4,
   },
   slotText: { fontWeight: "bold", color: "#4390a1" },
   input: {
     borderWidth: 1, borderColor: "#ccc", borderRadius: 6,
-    padding: 10, marginTop: 8, backgroundColor: "#fff",
+    padding: 10, marginTop: 8,
   },
   modalBg: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "center", alignItems: "center" },
-  modalBox: { backgroundColor: "#fff", padding: 20, borderRadius: 12, width: 280 },
+  modalBox: { padding: 20, borderRadius: 12, width: 280 },
 });

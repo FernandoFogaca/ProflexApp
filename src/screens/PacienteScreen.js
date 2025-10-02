@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react"
 import {
   View,
@@ -8,9 +7,9 @@ import {
   FlatList,
   StyleSheet,
   Alert,
-  useColorScheme,
 } from "react-native"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import { useTheme } from "../context/ThemeContext" 
 
 function calcularIdade(dataNasc) {
   if (!dataNasc) return ""
@@ -30,8 +29,9 @@ export default function PacienteScreen({ navigation }) {
   const [nascimento, setNascimento] = useState("")
   const [pacientes, setPacientes] = useState([])
   const [busca, setBusca] = useState("")
-  const scheme = useColorScheme() // "light" ou "dark"
-  const isDark = scheme === "dark"
+
+  const { theme } = useTheme()       
+  const isDark = theme === "dark"    
 
   useEffect(() => {
     const loadData = async () => {
@@ -87,13 +87,9 @@ export default function PacienteScreen({ navigation }) {
         { backgroundColor: isDark ? "#121212" : "#f1f1f1" },
       ]}
     >
-      <View
-        style={[
-          styles.box,
-          { backgroundColor: isDark ? "#1e1e1e" : "#4390a1" },
-        ]}
-      >
-        <Text style={[styles.title, { color: isDark ? "#fff" : "#fff" }]}>
+      
+      <View style={[styles.box, { backgroundColor: "#4390a1" }]}>
+        <Text style={[styles.title, { color: "#fff" }]}>
           Cadastro de Pacientes
         </Text>
 
@@ -166,6 +162,7 @@ export default function PacienteScreen({ navigation }) {
         </View>
       </View>
 
+      {/* Lista de pacientes */}
       <FlatList
         data={resultado}
         keyExtractor={(item) => item.id}

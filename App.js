@@ -1,17 +1,22 @@
-// App.js
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 
-// Telas
 import HomeScreen from "./src/screens/HomeScreen";
 import AgendaScreen from "./src/screens/AgendaScreen";
 import PacienteScreen from "./src/screens/PacienteScreen";
 import MarketingScreen from "./src/screens/MarketingScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
 import CompromissosScreen from "./src/screens/CompromissosScreen";
+import LoginScreen from "./src/screens/LoginScreen";
+import NewsScreen from "./src/screens/NewsScreen";
+
+
+import CadastroCompleto from "./src/screens/CadastroCompleto/CadastroCompleto";
+
+import { ThemeProvider } from "./src/context/ThemeContext";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -46,11 +51,18 @@ function Tabs() {
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Tabs" component={Tabs} />
-        <Stack.Screen name="Compromissos" component={CompromissosScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <ThemeProvider>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Main" component={Tabs} />
+          <Stack.Screen name="Compromissos" component={CompromissosScreen} />
+          <Stack.Screen name="Noticias" component={NewsScreen} />
+
+          <Stack.Screen name="CadastroCompleto" component={CadastroCompleto} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </ThemeProvider>
   );
 }

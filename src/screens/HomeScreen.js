@@ -1,10 +1,8 @@
-
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useRef, useState } from "react";
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function HomeScreen({ navigation }) {
-
   const frases = [
     "Bem-vindo ao Proflex",
     "Bienvenue à Proflex",
@@ -29,7 +27,6 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <LinearGradient colors={["#6e7d87", "#4a555d", "#2f3438"]} style={styles.container}>
-
       <View style={styles.overlay} />
 
       {/* Frases animadas */}
@@ -37,7 +34,7 @@ export default function HomeScreen({ navigation }) {
         {frases[index]}
       </Animated.Text>
 
-      {/* Botões padrão */}
+      {/* Botões */}
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate("Agenda")}
@@ -47,19 +44,19 @@ export default function HomeScreen({ navigation }) {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate("Assinar")}
+        onPress={() => navigation.navigate("News")} // 👈 vai para tela News
       >
         <Text style={styles.buttonText}>Assinar</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate("Noticias")}
+        onPress={() => navigation.navigate("News")} // 👈 mesma tela News
       >
         <Text style={styles.buttonText}>Notícias</Text>
       </TouchableOpacity>
 
-      {/*  frase padrão */}
+      {/* Rodapé */}
       <View style={styles.footer}>
         <Text style={styles.footerText}>
           Proflex system helps professionals manage their schedules, reminders, and client data – all in one place.

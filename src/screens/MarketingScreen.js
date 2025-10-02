@@ -1,4 +1,4 @@
-// src/screens/MarketingScreen.js
+
 import React, { useState } from "react";
 import {
   View,
@@ -11,10 +11,15 @@ import {
   Linking,
   Alert,
   Image,
+  ScrollView,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { useTheme } from "../context/ThemeContext";
 
 export default function MarketingScreen() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const [mensagem, setMensagem] = useState("");
   const [campanhas, setCampanhas] = useState([
     {
@@ -29,7 +34,6 @@ export default function MarketingScreen() {
     },
   ]);
 
-  // Create new campaign
   const addCampanha = () => {
     if (!mensagem.trim()) {
       Alert.alert("Error", "Please type a message first.");
@@ -44,7 +48,6 @@ export default function MarketingScreen() {
     setMensagem("");
   };
 
-  // Share
   const shareMensagem = async (msg) => {
     try {
       await Share.share({ message: msg });
@@ -53,7 +56,6 @@ export default function MarketingScreen() {
     }
   };
 
-  // WhatsApp
   const sendWhatsApp = (msg) => {
     const url = `whatsapp://send?text=${encodeURIComponent(msg)}`;
     Linking.openURL(url).catch(() =>
@@ -61,7 +63,6 @@ export default function MarketingScreen() {
     );
   };
 
-  // Edit
   const editCampanha = (id) => {
     const camp = campanhas.find((c) => c.id === id);
     if (!camp) return;
@@ -69,12 +70,10 @@ export default function MarketingScreen() {
     setCampanhas(campanhas.filter((c) => c.id !== id));
   };
 
-  // Delete
   const deleteCampanha = (id) => {
     setCampanhas(campanhas.filter((c) => c.id !== id));
   };
 
-  // Image upload
   const pickImage = async (id) => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -90,34 +89,59 @@ export default function MarketingScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Marketing Campaigns</Text>
+    <ScrollView
+      contentContainerStyle={[
+        styles.container,
+        { backgroundColor: isDark ? "#121212" : "#f9f9f9" },
+      ]}
+    >
+  
+      <View style={styles.box}>
+        <Text style={styles.title}>Marketing Campaigns</Text>
 
-      {/* Create new campaign */}
-      <TextInput
-        style={styles.input}
-        placeholder="Write your campaign message..."
-        value={mensagem}
-        onChangeText={setMensagem}
-      />
-      <TouchableOpacity style={styles.button} onPress={addCampanha}>
-        <Text style={styles.buttonText}>Add Campaign</Text>
-      </TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          placeholder="Write your campaign message..."
+          placeholderTextColor="#666"
+          value={mensagem}
+          onChangeText={setMensagem}
+        />
+        <TouchableOpacity style={styles.button} onPress={addCampanha}>
+          <Text style={styles.buttonText}>Add Campaign</Text>
+        </TouchableOpacity>
+      </View>
 
-      {/* Campaign list */}
+   
       <FlatList
         data={campanhas}
         keyExtractor={(item) => item.id}
         style={{ marginTop: 20, width: "100%" }}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <View
+            style={[
+              styles.card,
+              {
+                backgroundColor: isDark ? "#1e1e1e" : "#fff",
+                borderColor: isDark ? "#333" : "#ddd",
+              },
+            ]}
+          >
             <View style={{ flex: 1 }}>
-              <Text style={styles.nome}>{item.title}</Text>
-              <Text style={styles.info}>{item.msg}</Text>
+              <Text style={[styles.nome, { color: isDark ? "#fff" : "#000" }]}>
+                {item.title}
+              </Text>
+              <Text style={[styles.info, { color: isDark ? "#ccc" : "#555" }]}>
+                {item.msg}
+              </Text>
               {item.image && (
                 <Image
                   source={{ uri: item.image }}
-                  style={{ width: "100%", height: 120, marginTop: 8, borderRadius: 8 }}
+                  style={{
+                    width: "100%",
+                    height: 120,
+                    marginTop: 8,
+                    borderRadius: 8,
+                  }}
                   resizeMode="cover"
                 />
               )}
@@ -157,14 +181,28 @@ export default function MarketingScreen() {
           </View>
         )}
       />
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#f9f9f9" },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 15, textAlign: "center" },
+  container: {
+    flexGrow: 1,
+    alignItems: "center",
+    padding: 20,
+  },
+  box: {
+    backgroundColor: "#4390a1",
+    width: "100%",
+    borderRadius: 12,
+    padding: 20,
+    alignItems: "center",
+    marginBottom: 20,
+    marginTop: 40,
+  },
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 15, color: "#fff" },
   input: {
+    width: "100%",
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
@@ -173,22 +211,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   button: {
-    backgroundColor: "#4390a1",
+    backgroundColor: "#2c6c7a",
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
+    width: "100%",
   },
   buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
   card: {
-    backgroundColor: "#fff",
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#ddd",
+    width: "100%",
   },
   nome: { fontSize: 18, fontWeight: "bold", marginBottom: 5 },
-  info: { fontSize: 14, color: "#555" },
+  info: { fontSize: 14 },
   actions: {
     flexDirection: "row",
     marginTop: 10,
